@@ -9,7 +9,7 @@ This script supports two modes:
 1. SRC Validation: Tests endpoints and captures responses (no expected_response)
 2. DST Contract Validation: Tests endpoints and validates responses match expected (has expected_response)
 
-Generated at: 2026-03-13T01:56:02.025840+00:00
+Generated at: 2026-03-13T01:59:14.912960+00:00
 Project: shop-0312-1
 Milestone: 1
 """
@@ -53,88 +53,75 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
     {
         "name": "health_check_happy_path",
         "category": "HAPPY_PATH",
+        "description": "Verify health check returns healthy status",
         "endpoint": "/",
         "method": "GET",
-        "description": "Verify health check returns healthy status",
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
-        },
-        "expected_status": 200,
-        "setup": null,
-        "cleanup": null
+        "request_data": {},
+        "expected_status": 200
     },
     {
         "name": "create_user_happy_path",
         "category": "HAPPY_PATH",
+        "description": "Create a new user with valid email and name",
         "endpoint": "/users",
         "method": "POST",
-        "description": "Create a new user with valid email and name",
         "request_data": {
-            "path": {},
-            "query": {},
             "body": {
-                "email": "alice@example.com",
+                "email": "alice_functest@example.com",
                 "name": "Alice Johnson"
             }
         },
         "expected_status": 200,
-        "setup": null,
-        "cleanup": null
+        "cleanup": {
+            "endpoint": "/users",
+            "method": "GET"
+        }
     },
     {
         "name": "create_user_duplicate_email",
         "category": "INVALID_INPUT",
+        "description": "Attempt to create a user with an email that already exists",
         "endpoint": "/users",
         "method": "POST",
-        "description": "Attempt to create a user with an email that already exists",
         "setup": {
             "endpoint": "/users",
             "method": "POST",
             "body": {
-                "email": "duplicate@example.com",
+                "email": "duptest_unique_001@example.com",
                 "name": "First User"
             },
             "extract_id_from": "id"
         },
         "request_data": {
-            "path": {},
-            "query": {},
             "body": {
-                "email": "duplicate@example.com",
+                "email": "duptest_unique_001@example.com",
                 "name": "Second User"
             }
         },
-        "expected_status": 400,
-        "cleanup": null
+        "expected_status": 400
     },
     {
         "name": "create_user_missing_required_fields",
         "category": "MISSING_REQUIRED",
+        "description": "Attempt to create a user without required fields",
         "endpoint": "/users",
         "method": "POST",
-        "description": "Attempt to create a user without required fields",
         "request_data": {
-            "path": {},
-            "query": {},
             "body": {}
         },
-        "expected_status": 422,
-        "setup": null,
-        "cleanup": null
+        "expected_status": 400
     },
     {
         "name": "get_user_happy_path",
         "category": "HAPPY_PATH",
+        "description": "Create a user then retrieve it by ID",
         "endpoint": "/users/{user_id}",
         "method": "GET",
-        "description": "Create a user then retrieve it by ID",
         "setup": {
             "endpoint": "/users",
             "method": "POST",
             "body": {
-                "email": "getuser@example.com",
+                "email": "getuser_unique_001@example.com",
                 "name": "Get User Test"
             },
             "extract_id_from": "id"
@@ -142,44 +129,31 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
         "request_data": {
             "path": {
                 "user_id": "$setup_id"
-            },
-            "query": {},
-            "body": null
+            }
         },
-        "expected_status": 200,
-        "cleanup": null
+        "expected_status": 200
     },
     {
         "name": "get_user_not_found",
         "category": "NOT_FOUND",
+        "description": "Attempt to retrieve a user that does not exist",
         "endpoint": "/users/{user_id}",
         "method": "GET",
-        "description": "Attempt to retrieve a user that does not exist",
         "request_data": {
             "path": {
                 "user_id": 999999
-            },
-            "query": {},
-            "body": null
+            }
         },
-        "expected_status": 404,
-        "setup": null,
-        "cleanup": null
+        "expected_status": 404
     },
     {
         "name": "list_users_happy_path",
         "category": "HAPPY_PATH",
+        "description": "List all users and verify response is an array",
         "endpoint": "/users",
         "method": "GET",
-        "description": "List all users and verify response is an array",
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
-        },
-        "expected_status": 200,
-        "setup": null,
-        "cleanup": null
+        "request_data": {},
+        "expected_status": 200
     }
 ]''')
 )
