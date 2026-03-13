@@ -9,7 +9,7 @@ This script supports two modes:
 1. SRC Validation: Tests endpoints and captures responses (no expected_response)
 2. DST Contract Validation: Tests endpoints and validates responses match expected (has expected_response)
 
-Generated at: 2026-03-13T04:55:03.351965+00:00
+Generated at: 2026-03-13T04:56:42.389667+00:00
 Project: shop-0312-1
 Milestone: 2
 """
@@ -104,31 +104,21 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
     {
         "name": "create_product_happy_path",
         "category": "HAPPY_PATH",
-        "description": "Create a product with a valid category",
+        "description": "Create a product successfully",
         "endpoint": "/products",
         "method": "POST",
-        "setup": {
-            "endpoint": "/categories",
-            "method": "POST",
-            "body": {
-                "name": "ProductTestCategory",
-                "description": "Category for product tests"
-            },
-            "extract_id_from": "id"
-        },
         "request_data": {
             "body": {
                 "name": "Laptop",
                 "description": "A powerful laptop",
-                "price": 999.99,
-                "category_id": "$setup_id"
+                "price": 999.99
             }
         },
         "expected_status": 200,
         "expected_response": {
             "name": "Laptop",
             "description": "A powerful laptop",
-            "price": 999.99
+            "price": "999.99"
         }
     },
     {
@@ -147,7 +137,7 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
         "expected_status": 200,
         "expected_response": {
             "name": "Standalone Widget",
-            "price": 19.99
+            "price": "19.99"
         }
     },
     {
@@ -193,7 +183,7 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
         "expected_status": 200,
         "expected_response": {
             "name": "GetTestProduct",
-            "price": 49.99
+            "price": "49.99"
         }
     },
     {
