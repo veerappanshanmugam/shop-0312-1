@@ -9,7 +9,7 @@ This script supports two modes:
 1. SRC Validation: Tests endpoints and captures responses (no expected_response)
 2. DST Contract Validation: Tests endpoints and validates responses match expected (has expected_response)
 
-Generated at: 2026-03-13T04:49:18.931092+00:00
+Generated at: 2026-03-13T04:50:53.742780+00:00
 Project: shop-0312-1
 Milestone: 2
 """
@@ -53,79 +53,70 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
     {
         "name": "create_category_happy_path",
         "category": "HAPPY_PATH",
+        "description": "Create a new category with name and description",
         "endpoint": "/categories",
         "method": "POST",
-        "description": "Create a new category with valid name and description",
         "request_data": {
-            "path": {},
-            "query": {},
             "body": {
                 "name": "Electronics",
-                "description": "Electronic devices and gadgets"
+                "description": "Electronic devices and accessories"
             }
         },
         "expected_status": 200,
-        "setup": null,
-        "cleanup": null
+        "expected_response": {
+            "name": "Electronics",
+            "description": "Electronic devices and accessories"
+        }
     },
     {
-        "name": "create_category_minimal",
+        "name": "create_category_without_description",
         "category": "HAPPY_PATH",
+        "description": "Create a category with only a name (description is optional)",
         "endpoint": "/categories",
         "method": "POST",
-        "description": "Create a category with only the required name field",
         "request_data": {
-            "path": {},
-            "query": {},
             "body": {
                 "name": "Books"
             }
         },
         "expected_status": 200,
-        "setup": null,
-        "cleanup": null
-    },
-    {
-        "name": "create_category_missing_name",
-        "category": "MISSING_REQUIRED",
-        "endpoint": "/categories",
-        "method": "POST",
-        "description": "Attempt to create a category without the required name field",
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": {
-                "description": "A category without a name"
-            }
-        },
-        "expected_status": 422,
-        "setup": null,
-        "cleanup": null
+        "expected_response": {
+            "name": "Books",
+            "description": null
+        }
     },
     {
         "name": "list_categories_happy_path",
         "category": "HAPPY_PATH",
+        "description": "List all categories after creating some",
         "endpoint": "/categories",
         "method": "GET",
-        "description": "List all categories, returns an array",
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
+        "setup": {
+            "endpoint": "/categories",
+            "method": "POST",
+            "body": {
+                "name": "ListTestCategory",
+                "description": "Category for list test"
+            }
         },
-        "expected_status": 200,
-        "setup": null,
-        "cleanup": null
+        "expected_status": 200
     },
     {
         "name": "create_product_happy_path",
         "category": "HAPPY_PATH",
+        "description": "Create a product with a valid category",
         "endpoint": "/products",
         "method": "POST",
-        "description": "Create a product with a valid category, which also auto-creates an inventory record",
+        "setup": {
+            "endpoint": "/categories",
+            "method": "POST",
+            "body": {
+                "name": "ProductTestCategory",
+                "description": "Category for product tests"
+            },
+            "extract_id_from": "id"
+        },
         "request_data": {
-            "path": {},
-            "query": {},
             "body": {
                 "name": "Laptop",
                 "description": "A powerful laptop",
@@ -134,127 +125,109 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
             }
         },
         "expected_status": 200,
-        "setup": {
-            "endpoint": "/categories",
-            "method": "POST",
-            "body": {
-                "name": "TestCategoryForProduct",
-                "description": "Test category"
-            },
-            "extract_id_from": "id"
-        },
-        "cleanup": null
+        "expected_response": {
+            "name": "Laptop",
+            "description": "A powerful laptop",
+            "price": 999.99
+        }
     },
     {
-        "name": "create_product_no_category",
+        "name": "create_product_without_category",
         "category": "HAPPY_PATH",
+        "description": "Create a product without a category_id",
         "endpoint": "/products",
         "method": "POST",
-        "description": "Create a product without a category_id",
         "request_data": {
-            "path": {},
-            "query": {},
             "body": {
-                "name": "Generic Widget",
+                "name": "Standalone Widget",
+                "description": "No category assigned",
                 "price": 19.99
             }
         },
         "expected_status": 200,
-        "setup": null,
-        "cleanup": null
+        "expected_response": {
+            "name": "Standalone Widget",
+            "price": 19.99
+        }
     },
     {
         "name": "create_product_nonexistent_category",
         "category": "NOT_FOUND",
+        "description": "Creating a product with a non-existent category_id returns 404",
         "endpoint": "/products",
         "method": "POST",
-        "description": "Attempt to create a product referencing a non-existent category",
         "request_data": {
-            "path": {},
-            "query": {},
             "body": {
-                "name": "Phantom Product",
-                "price": 49.99,
+                "name": "Ghost Product",
+                "description": "Invalid category",
+                "price": 10.0,
                 "category_id": 999999
             }
         },
         "expected_status": 404,
-        "setup": null,
-        "cleanup": null
-    },
-    {
-        "name": "create_product_missing_required",
-        "category": "MISSING_REQUIRED",
-        "endpoint": "/products",
-        "method": "POST",
-        "description": "Attempt to create a product without the required price field",
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": {
-                "name": "No Price Product"
-            }
-        },
-        "expected_status": 422,
-        "setup": null,
-        "cleanup": null
+        "expected_response": {
+            "detail": "Category not found"
+        }
     },
     {
         "name": "get_product_happy_path",
         "category": "HAPPY_PATH",
+        "description": "Retrieve an existing product by ID",
         "endpoint": "/products/{product_id}",
         "method": "GET",
-        "description": "Create a product then retrieve it by ID",
-        "request_data": {
-            "path": {
-                "product_id": "$setup_id"
-            },
-            "query": {},
-            "body": null
-        },
-        "expected_status": 200,
         "setup": {
             "endpoint": "/products",
             "method": "POST",
             "body": {
-                "name": "Retrievable Product",
-                "price": 25.5
+                "name": "GetTestProduct",
+                "description": "Product for get test",
+                "price": 49.99
             },
             "extract_id_from": "id"
         },
-        "cleanup": null
+        "request_data": {
+            "path": {
+                "product_id": "$setup_id"
+            }
+        },
+        "expected_status": 200,
+        "expected_response": {
+            "name": "GetTestProduct",
+            "price": 49.99
+        }
     },
     {
         "name": "get_product_not_found",
         "category": "NOT_FOUND",
+        "description": "Requesting a non-existent product returns 404",
         "endpoint": "/products/{product_id}",
         "method": "GET",
-        "description": "Attempt to retrieve a product that does not exist",
         "request_data": {
             "path": {
                 "product_id": 999999
-            },
-            "query": {},
-            "body": null
+            }
         },
         "expected_status": 404,
-        "setup": null,
-        "cleanup": null
+        "expected_response": {
+            "detail": "Product not found"
+        }
     },
     {
         "name": "list_products_happy_path",
         "category": "HAPPY_PATH",
+        "description": "List all products after creating some",
         "endpoint": "/products",
         "method": "GET",
-        "description": "List all products, returns an array",
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
+        "setup": {
+            "endpoint": "/products",
+            "method": "POST",
+            "body": {
+                "name": "ListTestProduct",
+                "description": "Product for list test",
+                "price": 29.99
+            }
         },
-        "expected_status": 200,
-        "setup": null,
-        "cleanup": null
+        "expected_status": 200
     }
 ]''')
 )
