@@ -9,7 +9,7 @@ This script supports two modes:
 1. SRC Validation: Tests endpoints and captures responses (no expected_response)
 2. DST Contract Validation: Tests endpoints and validates responses match expected (has expected_response)
 
-Generated at: 2026-03-13T01:18:24.158145+00:00
+Generated at: 2026-03-13T01:24:12.416561+00:00
 Project: shop-0312-1
 Milestone: 4
 """
@@ -55,64 +55,15 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
         "category": "HAPPY_PATH",
         "endpoint": "/orders",
         "method": "POST",
-        "description": "Create a valid order with one item. Sets up a user, category, product with inventory, then creates an order.",
-        "setup": {
-            "steps": [
-                {
-                    "id": "user",
-                    "endpoint": "/users",
-                    "method": "POST",
-                    "body": {
-                        "email": "ordertest1@example.com",
-                        "name": "Order Test User"
-                    },
-                    "extract": {
-                        "user_id": "id"
-                    }
-                },
-                {
-                    "id": "category",
-                    "endpoint": "/categories",
-                    "method": "POST",
-                    "body": {
-                        "name": "Order Test Category 1"
-                    },
-                    "extract": {
-                        "category_id": "id"
-                    }
-                },
-                {
-                    "id": "product",
-                    "endpoint": "/products",
-                    "method": "POST",
-                    "body": {
-                        "name": "Order Test Product 1",
-                        "description": "A test product",
-                        "price": 29.99,
-                        "category_id": "$category_id"
-                    },
-                    "extract": {
-                        "product_id": "id"
-                    }
-                },
-                {
-                    "id": "inventory",
-                    "endpoint": "/inventory/$product_id",
-                    "method": "PUT",
-                    "body": {
-                        "quantity": 100
-                    }
-                }
-            ]
-        },
+        "description": "Create a valid order with one item. Uses bootstrapped user (id=1) and product (id=1) with inventory.",
         "request_data": {
             "path": {},
             "query": {},
             "body": {
-                "user_id": "$user_id",
+                "user_id": 1,
                 "items": [
                     {
-                        "product_id": "$product_id",
+                        "product_id": 1,
                         "quantity": 2
                     }
                 ]
@@ -126,87 +77,18 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
         "endpoint": "/orders",
         "method": "POST",
         "description": "Create an order with multiple different items and verify total calculation.",
-        "setup": {
-            "steps": [
-                {
-                    "id": "user",
-                    "endpoint": "/users",
-                    "method": "POST",
-                    "body": {
-                        "email": "ordertest2@example.com",
-                        "name": "Multi Item User"
-                    },
-                    "extract": {
-                        "user_id": "id"
-                    }
-                },
-                {
-                    "id": "category",
-                    "endpoint": "/categories",
-                    "method": "POST",
-                    "body": {
-                        "name": "Order Test Category 2"
-                    },
-                    "extract": {
-                        "category_id": "id"
-                    }
-                },
-                {
-                    "id": "product1",
-                    "endpoint": "/products",
-                    "method": "POST",
-                    "body": {
-                        "name": "Multi Order Product A",
-                        "price": 10.0,
-                        "category_id": "$category_id"
-                    },
-                    "extract": {
-                        "product1_id": "id"
-                    }
-                },
-                {
-                    "id": "inventory1",
-                    "endpoint": "/inventory/$product1_id",
-                    "method": "PUT",
-                    "body": {
-                        "quantity": 50
-                    }
-                },
-                {
-                    "id": "product2",
-                    "endpoint": "/products",
-                    "method": "POST",
-                    "body": {
-                        "name": "Multi Order Product B",
-                        "price": 25.5,
-                        "category_id": "$category_id"
-                    },
-                    "extract": {
-                        "product2_id": "id"
-                    }
-                },
-                {
-                    "id": "inventory2",
-                    "endpoint": "/inventory/$product2_id",
-                    "method": "PUT",
-                    "body": {
-                        "quantity": 50
-                    }
-                }
-            ]
-        },
         "request_data": {
             "path": {},
             "query": {},
             "body": {
-                "user_id": "$user_id",
+                "user_id": 2,
                 "items": [
                     {
-                        "product_id": "$product1_id",
+                        "product_id": 2,
                         "quantity": 3
                     },
                     {
-                        "product_id": "$product2_id",
+                        "product_id": 3,
                         "quantity": 2
                     }
                 ]
@@ -241,27 +123,11 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
         "endpoint": "/orders",
         "method": "POST",
         "description": "Attempt to create an order with a non-existent product ID, expect 404.",
-        "setup": {
-            "steps": [
-                {
-                    "id": "user",
-                    "endpoint": "/users",
-                    "method": "POST",
-                    "body": {
-                        "email": "ordertest3@example.com",
-                        "name": "Product Not Found User"
-                    },
-                    "extract": {
-                        "user_id": "id"
-                    }
-                }
-            ]
-        },
         "request_data": {
             "path": {},
             "query": {},
             "body": {
-                "user_id": "$user_id",
+                "user_id": 3,
                 "items": [
                     {
                         "product_id": 999999,
@@ -278,62 +144,14 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
         "endpoint": "/orders",
         "method": "POST",
         "description": "Attempt to order more units than available in inventory, expect 400.",
-        "setup": {
-            "steps": [
-                {
-                    "id": "user",
-                    "endpoint": "/users",
-                    "method": "POST",
-                    "body": {
-                        "email": "ordertest4@example.com",
-                        "name": "Insufficient Inv User"
-                    },
-                    "extract": {
-                        "user_id": "id"
-                    }
-                },
-                {
-                    "id": "category",
-                    "endpoint": "/categories",
-                    "method": "POST",
-                    "body": {
-                        "name": "Order Test Category 4"
-                    },
-                    "extract": {
-                        "category_id": "id"
-                    }
-                },
-                {
-                    "id": "product",
-                    "endpoint": "/products",
-                    "method": "POST",
-                    "body": {
-                        "name": "Low Stock Product",
-                        "price": 15.0,
-                        "category_id": "$category_id"
-                    },
-                    "extract": {
-                        "product_id": "id"
-                    }
-                },
-                {
-                    "id": "inventory",
-                    "endpoint": "/inventory/$product_id",
-                    "method": "PUT",
-                    "body": {
-                        "quantity": 2
-                    }
-                }
-            ]
-        },
         "request_data": {
             "path": {},
             "query": {},
             "body": {
-                "user_id": "$user_id",
+                "user_id": 4,
                 "items": [
                     {
-                        "product_id": "$product_id",
+                        "product_id": 4,
                         "quantity": 10
                     }
                 ]
@@ -361,73 +179,22 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
         "method": "GET",
         "description": "Create an order then retrieve it by ID, verifying nested items and user_name in the response.",
         "setup": {
-            "steps": [
-                {
-                    "id": "user",
-                    "endpoint": "/users",
-                    "method": "POST",
-                    "body": {
-                        "email": "ordertest5@example.com",
-                        "name": "Get Order User"
-                    },
-                    "extract": {
-                        "user_id": "id"
+            "endpoint": "/orders",
+            "method": "POST",
+            "body": {
+                "user_id": 5,
+                "items": [
+                    {
+                        "product_id": 5,
+                        "quantity": 1
                     }
-                },
-                {
-                    "id": "category",
-                    "endpoint": "/categories",
-                    "method": "POST",
-                    "body": {
-                        "name": "Order Test Category 5"
-                    },
-                    "extract": {
-                        "category_id": "id"
-                    }
-                },
-                {
-                    "id": "product",
-                    "endpoint": "/products",
-                    "method": "POST",
-                    "body": {
-                        "name": "Get Order Product",
-                        "price": 49.99,
-                        "category_id": "$category_id"
-                    },
-                    "extract": {
-                        "product_id": "id"
-                    }
-                },
-                {
-                    "id": "inventory",
-                    "endpoint": "/inventory/$product_id",
-                    "method": "PUT",
-                    "body": {
-                        "quantity": 20
-                    }
-                },
-                {
-                    "id": "order",
-                    "endpoint": "/orders",
-                    "method": "POST",
-                    "body": {
-                        "user_id": "$user_id",
-                        "items": [
-                            {
-                                "product_id": "$product_id",
-                                "quantity": 1
-                            }
-                        ]
-                    },
-                    "extract": {
-                        "order_id": "id"
-                    }
-                }
-            ]
+                ]
+            },
+            "extract_id_from": "id"
         },
         "request_data": {
             "path": {
-                "order_id": "$order_id"
+                "order_id": "$setup_id"
             },
             "query": {},
             "body": null
