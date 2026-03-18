@@ -28,6 +28,7 @@ public class Inventory {
     private Integer reserved = 0;
 
     @Column(name = "last_updated")
+    @JsonProperty("last_updated")
     private LocalDateTime lastUpdated;
 
     @PrePersist

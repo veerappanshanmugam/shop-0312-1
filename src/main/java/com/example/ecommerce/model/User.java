@@ -3,6 +3,8 @@ package com.example.ecommerce.model;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,6 +28,7 @@ public class User {
     private String name;
 
     @Column(name = "created_at")
+    @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
     @PrePersist

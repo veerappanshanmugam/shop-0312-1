@@ -33,6 +33,7 @@ public class Order {
     private BigDecimal total;
 
     @Column(name = "created_at")
+    @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
     @PrePersist

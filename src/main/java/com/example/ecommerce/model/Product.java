@@ -36,6 +36,7 @@ public class Product {
     private Long categoryId;
 
     @Column(name = "created_at")
+    @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
     @PrePersist
