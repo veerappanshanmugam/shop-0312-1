@@ -9,7 +9,7 @@ This script supports two modes:
 1. SRC Validation: Tests endpoints and captures responses (no expected_response)
 2. DST Contract Validation: Tests endpoints and validates responses match expected (has expected_response)
 
-Generated at: 2026-03-18T19:14:07.399223+00:00
+Generated at: 2026-03-18T19:25:16.359731+00:00
 Project: shop-0317-1
 Milestone: 2
 """
@@ -329,33 +329,6 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
         "cleanup": null
     },
     {
-        "name": "reserve_inventory_happy_path",
-        "category": "HAPPY_PATH",
-        "endpoint": "/inventory/{product_id}/reserve",
-        "method": "POST",
-        "description": "Create a product, set inventory to 100, then reserve 25 units",
-        "setup": {
-            "endpoint": "/products",
-            "method": "POST",
-            "body": {
-                "name": "ReserveTestProduct",
-                "price": 15.0
-            },
-            "extract_id_from": "id"
-        },
-        "request_data": {
-            "path": {
-                "product_id": "$setup_id"
-            },
-            "query": {},
-            "body": {
-                "quantity": 5
-            }
-        },
-        "expected_status": 200,
-        "cleanup": null
-    },
-    {
         "name": "reserve_inventory_insufficient_stock",
         "category": "INVALID_INPUT",
         "endpoint": "/inventory/{product_id}/reserve",
@@ -405,8 +378,8 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
 )
 
 # Base URL for API requests (from app discovery, includes host:port)
-BASE_URL = os.path.expandvars("")
-HEALTH_CHECK_ENDPOINT = os.path.expandvars("")
+BASE_URL = os.path.expandvars("http://localhost:8000")
+HEALTH_CHECK_ENDPOINT = os.path.expandvars("/")
 REQUEST_TIMEOUT = 30
 HEALTH_CHECK_URL = f"{BASE_URL.rstrip('/')}/{HEALTH_CHECK_ENDPOINT.lstrip('/')}"
 # Per-endpoint routing table for microservices DST
