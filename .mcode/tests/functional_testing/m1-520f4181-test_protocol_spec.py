@@ -9,7 +9,7 @@ This script supports two modes:
 1. SRC Validation: Tests endpoints and captures responses (no expected_response)
 2. DST Contract Validation: Tests endpoints and validates responses match expected (has expected_response)
 
-Generated at: 2026-03-18T19:13:24.029695+00:00
+Generated at: 2026-03-18T19:22:18.415481+00:00
 Project: shop-0317-1
 Milestone: 1
 """
@@ -76,8 +76,8 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
             "path": {},
             "query": {},
             "body": {
-                "email": "alice@example.com",
-                "name": "Alice Smith"
+                "email": "testuser_create@example.com",
+                "name": "Test Create User"
             }
         },
         "expected_status": 200,
@@ -93,7 +93,7 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
             "endpoint": "/users",
             "method": "POST",
             "body": {
-                "email": "duplicate@example.com",
+                "email": "duplicate_test@example.com",
                 "name": "First User"
             },
             "extract_id_from": "id"
@@ -102,7 +102,7 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
             "path": {},
             "query": {},
             "body": {
-                "email": "duplicate@example.com",
+                "email": "duplicate_test@example.com",
                 "name": "Second User"
             }
         },
@@ -137,7 +137,7 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
             "path": {},
             "query": {},
             "body": {
-                "email": "noname@example.com"
+                "email": "noname_test@example.com"
             }
         },
         "expected_status": 422,
@@ -153,7 +153,7 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
             "endpoint": "/users",
             "method": "POST",
             "body": {
-                "email": "getuser@example.com",
+                "email": "getuser_test@example.com",
                 "name": "Get User Test"
             },
             "extract_id_from": "id"
@@ -199,13 +199,493 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
         },
         "expected_status": 200,
         "cleanup": null
+    },
+    {
+        "name": "create_category_happy_path",
+        "category": "HAPPY_PATH",
+        "endpoint": "/categories",
+        "method": "POST",
+        "description": "Create a new category with name and description",
+        "setup": null,
+        "request_data": {
+            "path": {},
+            "query": {},
+            "body": {
+                "name": "Test Category Create",
+                "description": "A test category"
+            }
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "create_category_no_description",
+        "category": "HAPPY_PATH",
+        "endpoint": "/categories",
+        "method": "POST",
+        "description": "Create a category with name only, description is optional",
+        "setup": null,
+        "request_data": {
+            "path": {},
+            "query": {},
+            "body": {
+                "name": "Category No Desc Test"
+            }
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "list_categories_happy_path",
+        "category": "HAPPY_PATH",
+        "endpoint": "/categories",
+        "method": "GET",
+        "description": "List all categories",
+        "setup": null,
+        "request_data": {
+            "path": {},
+            "query": {},
+            "body": null
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "create_product_happy_path",
+        "category": "HAPPY_PATH",
+        "endpoint": "/products",
+        "method": "POST",
+        "description": "Create a new product with a valid category",
+        "setup": {
+            "endpoint": "/categories",
+            "method": "POST",
+            "body": {
+                "name": "Product Test Category",
+                "description": "For product creation test"
+            },
+            "extract_id_from": "id"
+        },
+        "request_data": {
+            "path": {},
+            "query": {},
+            "body": {
+                "name": "Test Product",
+                "description": "A test product",
+                "price": 29.99,
+                "category_id": "$setup_id"
+            }
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "create_product_no_category",
+        "category": "HAPPY_PATH",
+        "endpoint": "/products",
+        "method": "POST",
+        "description": "Create a product without a category",
+        "setup": null,
+        "request_data": {
+            "path": {},
+            "query": {},
+            "body": {
+                "name": "Product No Category",
+                "price": 15.5
+            }
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "create_product_invalid_category",
+        "category": "NOT_FOUND",
+        "endpoint": "/products",
+        "method": "POST",
+        "description": "Create a product with a non-existent category_id, expect 404",
+        "setup": null,
+        "request_data": {
+            "path": {},
+            "query": {},
+            "body": {
+                "name": "Product Bad Category",
+                "price": 10.0,
+                "category_id": 999999
+            }
+        },
+        "expected_status": 404,
+        "cleanup": null
+    },
+    {
+        "name": "get_product_by_id_happy_path",
+        "category": "HAPPY_PATH",
+        "endpoint": "/products/{product_id}",
+        "method": "GET",
+        "description": "Create a product then retrieve it by ID",
+        "setup": {
+            "endpoint": "/products",
+            "method": "POST",
+            "body": {
+                "name": "Get Product Test",
+                "price": 19.99
+            },
+            "extract_id_from": "id"
+        },
+        "request_data": {
+            "path": {
+                "product_id": "$setup_id"
+            },
+            "query": {},
+            "body": null
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "get_product_not_found",
+        "category": "NOT_FOUND",
+        "endpoint": "/products/{product_id}",
+        "method": "GET",
+        "description": "Attempt to retrieve a product with a non-existent ID, expect 404",
+        "setup": null,
+        "request_data": {
+            "path": {
+                "product_id": 999999
+            },
+            "query": {},
+            "body": null
+        },
+        "expected_status": 404,
+        "cleanup": null
+    },
+    {
+        "name": "list_products_happy_path",
+        "category": "HAPPY_PATH",
+        "endpoint": "/products",
+        "method": "GET",
+        "description": "List all products",
+        "setup": null,
+        "request_data": {
+            "path": {},
+            "query": {},
+            "body": null
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "get_inventory_happy_path",
+        "category": "HAPPY_PATH",
+        "endpoint": "/inventory/{product_id}",
+        "method": "GET",
+        "description": "Create a product (auto-creates inventory) then retrieve its inventory",
+        "setup": {
+            "endpoint": "/products",
+            "method": "POST",
+            "body": {
+                "name": "Inventory Test Product",
+                "price": 25.0
+            },
+            "extract_id_from": "id"
+        },
+        "request_data": {
+            "path": {
+                "product_id": "$setup_id"
+            },
+            "query": {},
+            "body": null
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "get_inventory_not_found",
+        "category": "NOT_FOUND",
+        "endpoint": "/inventory/{product_id}",
+        "method": "GET",
+        "description": "Attempt to retrieve inventory for a non-existent product, expect 404",
+        "setup": null,
+        "request_data": {
+            "path": {
+                "product_id": 999999
+            },
+            "query": {},
+            "body": null
+        },
+        "expected_status": 404,
+        "cleanup": null
+    },
+    {
+        "name": "update_inventory_happy_path",
+        "category": "HAPPY_PATH",
+        "endpoint": "/inventory/{product_id}",
+        "method": "PUT",
+        "description": "Create a product then update its inventory quantity",
+        "setup": {
+            "endpoint": "/products",
+            "method": "POST",
+            "body": {
+                "name": "Update Inventory Product",
+                "price": 30.0
+            },
+            "extract_id_from": "id"
+        },
+        "request_data": {
+            "path": {
+                "product_id": "$setup_id"
+            },
+            "query": {},
+            "body": {
+                "quantity": 100
+            }
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "update_inventory_not_found",
+        "category": "NOT_FOUND",
+        "endpoint": "/inventory/{product_id}",
+        "method": "PUT",
+        "description": "Attempt to update inventory for a non-existent product, expect 404",
+        "setup": null,
+        "request_data": {
+            "path": {
+                "product_id": 999999
+            },
+            "query": {},
+            "body": {
+                "quantity": 50
+            }
+        },
+        "expected_status": 404,
+        "cleanup": null
+    },
+    {
+        "name": "reserve_inventory_happy_path",
+        "category": "HAPPY_PATH",
+        "endpoint": "/inventory/{product_id}/reserve",
+        "method": "POST",
+        "description": "Create a product (inventory starts at 0), reserve 0 quantity which should succeed",
+        "setup": {
+            "endpoint": "/products",
+            "method": "POST",
+            "body": {
+                "name": "Reserve Inventory Product",
+                "price": 20.0
+            },
+            "extract_id_from": "id"
+        },
+        "request_data": {
+            "path": {
+                "product_id": "$setup_id"
+            },
+            "query": {},
+            "body": {
+                "quantity": 0
+            }
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "reserve_inventory_insufficient",
+        "category": "INVALID_INPUT",
+        "endpoint": "/inventory/{product_id}/reserve",
+        "method": "POST",
+        "description": "Create a product (inventory starts at 0) then try to reserve 100, expect 400",
+        "setup": {
+            "endpoint": "/products",
+            "method": "POST",
+            "body": {
+                "name": "Reserve Insufficient Product",
+                "price": 20.0
+            },
+            "extract_id_from": "id"
+        },
+        "request_data": {
+            "path": {
+                "product_id": "$setup_id"
+            },
+            "query": {},
+            "body": {
+                "quantity": 100
+            }
+        },
+        "expected_status": 400,
+        "cleanup": null
+    },
+    {
+        "name": "reserve_inventory_not_found",
+        "category": "NOT_FOUND",
+        "endpoint": "/inventory/{product_id}/reserve",
+        "method": "POST",
+        "description": "Attempt to reserve inventory for a non-existent product, expect 404",
+        "setup": null,
+        "request_data": {
+            "path": {
+                "product_id": 999999
+            },
+            "query": {},
+            "body": {
+                "quantity": 5
+            }
+        },
+        "expected_status": 404,
+        "cleanup": null
+    },
+    {
+        "name": "list_orders_happy_path",
+        "category": "HAPPY_PATH",
+        "endpoint": "/orders",
+        "method": "GET",
+        "description": "List all orders",
+        "setup": null,
+        "request_data": {
+            "path": {},
+            "query": {},
+            "body": null
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "get_order_not_found",
+        "category": "NOT_FOUND",
+        "endpoint": "/orders/{order_id}",
+        "method": "GET",
+        "description": "Attempt to retrieve an order with a non-existent ID, expect 404",
+        "setup": null,
+        "request_data": {
+            "path": {
+                "order_id": 999999
+            },
+            "query": {},
+            "body": null
+        },
+        "expected_status": 404,
+        "cleanup": null
+    },
+    {
+        "name": "create_order_user_not_found",
+        "category": "NOT_FOUND",
+        "endpoint": "/orders",
+        "method": "POST",
+        "description": "Create an order with a non-existent user, expect 404",
+        "setup": null,
+        "request_data": {
+            "path": {},
+            "query": {},
+            "body": {
+                "user_id": 999999,
+                "items": [
+                    {
+                        "product_id": 1,
+                        "quantity": 1
+                    }
+                ]
+            }
+        },
+        "expected_status": 404,
+        "cleanup": null
+    },
+    {
+        "name": "sales_report_happy_path",
+        "category": "HAPPY_PATH",
+        "endpoint": "/reports/sales",
+        "method": "GET",
+        "description": "Get sales report - returns summary even with no orders",
+        "setup": null,
+        "request_data": {
+            "path": {},
+            "query": {},
+            "body": null
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "inventory_report_happy_path",
+        "category": "HAPPY_PATH",
+        "endpoint": "/reports/inventory",
+        "method": "GET",
+        "description": "Get inventory report",
+        "setup": null,
+        "request_data": {
+            "path": {},
+            "query": {},
+            "body": null
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "inventory_report_custom_threshold",
+        "category": "HAPPY_PATH",
+        "endpoint": "/reports/inventory",
+        "method": "GET",
+        "description": "Get inventory report with custom low stock threshold",
+        "setup": null,
+        "request_data": {
+            "path": {},
+            "query": {
+                "low_stock_threshold": 5
+            },
+            "body": null
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "product_performance_report_happy_path",
+        "category": "HAPPY_PATH",
+        "endpoint": "/reports/products",
+        "method": "GET",
+        "description": "Get product performance report",
+        "setup": null,
+        "request_data": {
+            "path": {},
+            "query": {},
+            "body": null
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "category_performance_report_happy_path",
+        "category": "HAPPY_PATH",
+        "endpoint": "/reports/categories",
+        "method": "GET",
+        "description": "Get category performance report",
+        "setup": null,
+        "request_data": {
+            "path": {},
+            "query": {},
+            "body": null
+        },
+        "expected_status": 200,
+        "cleanup": null
+    },
+    {
+        "name": "user_activity_report_happy_path",
+        "category": "HAPPY_PATH",
+        "endpoint": "/reports/users",
+        "method": "GET",
+        "description": "Get user activity report",
+        "setup": null,
+        "request_data": {
+            "path": {},
+            "query": {},
+            "body": null
+        },
+        "expected_status": 200,
+        "cleanup": null
     }
 ]''')
 )
 
 # Base URL for API requests (from app discovery, includes host:port)
-BASE_URL = os.path.expandvars("")
-HEALTH_CHECK_ENDPOINT = os.path.expandvars("")
+BASE_URL = os.path.expandvars("http://localhost:8000")
+HEALTH_CHECK_ENDPOINT = os.path.expandvars("/")
 REQUEST_TIMEOUT = 30
 HEALTH_CHECK_URL = f"{BASE_URL.rstrip('/')}/{HEALTH_CHECK_ENDPOINT.lstrip('/')}"
 # Per-endpoint routing table for microservices DST
