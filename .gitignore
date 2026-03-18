@@ -69,13 +69,20 @@ target/
 # ----- Java / Kotlin / Scala / Gradle / Maven -----
 *.class
 *.jar
+!gradle/wrapper/gradle-wrapper.jar
 *.war
 *.ear
 *.nar
 .gradle/
+build/
 .mvn/wrapper/maven-wrapper.jar
 hs_err_pid*
 replay_pid*
+
+# ----- H2 Database files -----
+*.mv.db
+*.trace.db
+ecommerce.db
 
 # ----- Go -----
 *.exe
