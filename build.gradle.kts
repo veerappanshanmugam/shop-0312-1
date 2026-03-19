@@ -28,3 +28,17 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    doFirst {
+        // Kill any process using port 8000 to avoid "port already in use" errors
+        try {
+            ProcessBuilder("bash", "-c", "kill -9 \$(lsof -ti:8000 2>/dev/null) 2>/dev/null; sleep 2; exit 0")
+                .redirectErrorStream(true)
+                .start()
+                .waitFor(10, java.util.concurrent.TimeUnit.SECONDS)
+        } catch (e: Exception) {
+            println("Note: Could not free port 8000: \${e.message}")
+        }
+    }
+}
