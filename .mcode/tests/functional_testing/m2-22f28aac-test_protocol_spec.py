@@ -9,7 +9,7 @@ This script supports two modes:
 1. SRC Validation: Tests endpoints and captures responses (no expected_response)
 2. DST Contract Validation: Tests endpoints and validates responses match expected (has expected_response)
 
-Generated at: 2026-03-19T02:46:07.404029+00:00
+Generated at: 2026-03-19T02:50:51.085362+00:00
 Project: shop-0317-1
 Milestone: 2
 """
@@ -53,195 +53,227 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
     {
         "name": "create_category_happy_path",
         "category": "HAPPY_PATH",
+        "description": "Create a new category with name and description",
         "endpoint": "/categories",
         "method": "POST",
-        "description": "Create a new category with valid name and description",
-        "setup": null,
         "request_data": {
-            "path": {},
-            "query": {},
             "body": {
                 "name": "Electronics",
                 "description": "Electronic devices and gadgets"
             }
         },
         "expected_status": 200,
-        "cleanup": null
+        "expected_response": {
+            "name": "Electronics",
+            "description": "Electronic devices and gadgets"
+        }
     },
     {
         "name": "create_category_minimal",
         "category": "HAPPY_PATH",
+        "description": "Create a category with only the required name field",
         "endpoint": "/categories",
         "method": "POST",
-        "description": "Create a category with only the required name field",
-        "setup": null,
         "request_data": {
-            "path": {},
-            "query": {},
             "body": {
                 "name": "Books"
             }
         },
         "expected_status": 200,
-        "cleanup": null
+        "expected_response": {
+            "name": "Books"
+        }
     },
     {
         "name": "create_category_missing_name",
         "category": "MISSING_REQUIRED",
+        "description": "Attempt to create a category without the required name field",
         "endpoint": "/categories",
         "method": "POST",
-        "description": "Attempt to create a category without the required name field",
-        "setup": null,
         "request_data": {
-            "path": {},
-            "query": {},
             "body": {
                 "description": "A category without a name"
             }
         },
-        "expected_status": 500,
-        "cleanup": null
+        "expected_status": 422
     },
     {
         "name": "list_categories_happy_path",
         "category": "HAPPY_PATH",
+        "description": "List all categories after creating one",
         "endpoint": "/categories",
         "method": "GET",
-        "description": "List all categories, returns an array",
-        "setup": null,
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
+        "setup": {
+            "endpoint": "/categories",
+            "method": "POST",
+            "body": {
+                "name": "ListTestCategory",
+                "description": "Category for list test"
+            }
         },
-        "expected_status": 200,
-        "cleanup": null
+        "expected_status": 200
     },
     {
         "name": "create_product_happy_path",
         "category": "HAPPY_PATH",
+        "description": "Create a product associated with a category",
         "endpoint": "/products",
         "method": "POST",
-        "description": "Create a product without a category, verify product is returned with auto-generated ID",
-        "setup": null,
+        "setup": {
+            "endpoint": "/categories",
+            "method": "POST",
+            "body": {
+                "name": "ProductTestCategory"
+            },
+            "extract_id_from": "id"
+        },
         "request_data": {
-            "path": {},
-            "query": {},
             "body": {
                 "name": "Laptop",
-                "description": "High-end laptop",
-                "price": 999.99
+                "description": "A powerful laptop",
+                "price": 999.99,
+                "category_id": "$setup_id"
             }
         },
         "expected_status": 200,
-        "cleanup": null
+        "expected_response": {
+            "name": "Laptop",
+            "price": 999.99
+        }
     },
     {
         "name": "create_product_invalid_category",
         "category": "NOT_FOUND",
+        "description": "Attempt to create a product with a non-existent category ID",
         "endpoint": "/products",
         "method": "POST",
-        "description": "Attempt to create a product referencing a non-existent category, expect 404",
-        "setup": null,
         "request_data": {
-            "path": {},
-            "query": {},
             "body": {
-                "name": "Phantom Product",
-                "description": "Product with bad category",
+                "name": "Orphan Product",
                 "price": 49.99,
-                "category_id": 999999
+                "category_id": 99999
             }
         },
-        "expected_status": 404,
-        "cleanup": null
+        "expected_status": 404
     },
     {
         "name": "create_product_missing_price",
         "category": "MISSING_REQUIRED",
+        "description": "Attempt to create a product without the required price field",
         "endpoint": "/products",
         "method": "POST",
-        "description": "Attempt to create a product without the required price field",
-        "setup": null,
         "request_data": {
-            "path": {},
-            "query": {},
             "body": {
                 "name": "No Price Product"
             }
         },
-        "expected_status": 500,
-        "cleanup": null
+        "expected_status": 422
     },
     {
         "name": "get_product_happy_path",
         "category": "HAPPY_PATH",
+        "description": "Retrieve an existing product by ID",
         "endpoint": "/products/{product_id}",
         "method": "GET",
-        "description": "Create a product then retrieve it by ID",
         "setup": {
             "endpoint": "/products",
             "method": "POST",
             "body": {
-                "name": "Widget",
-                "description": "A test widget",
-                "price": 19.99
+                "name": "GetTestProduct",
+                "price": 29.99
             },
             "extract_id_from": "id"
         },
         "request_data": {
             "path": {
                 "product_id": "$setup_id"
-            },
-            "query": {},
-            "body": null
+            }
         },
         "expected_status": 200,
-        "cleanup": null
+        "expected_response": {
+            "name": "GetTestProduct",
+            "price": 29.99
+        }
     },
     {
         "name": "get_product_not_found",
         "category": "NOT_FOUND",
+        "description": "Attempt to retrieve a non-existent product",
         "endpoint": "/products/{product_id}",
         "method": "GET",
-        "description": "Attempt to retrieve a product that does not exist",
-        "setup": null,
         "request_data": {
             "path": {
-                "product_id": 999999
-            },
-            "query": {},
-            "body": null
+                "product_id": 99999
+            }
         },
-        "expected_status": 404,
-        "cleanup": null
+        "expected_status": 404
     },
     {
         "name": "list_products_happy_path",
         "category": "HAPPY_PATH",
+        "description": "List all products after creating one",
         "endpoint": "/products",
         "method": "GET",
-        "description": "List all products, returns an array",
-        "setup": null,
-        "request_data": {
-            "path": {},
-            "query": {},
-            "body": null
-        },
-        "expected_status": 200,
-        "cleanup": null
-    },
-    {
-        "name": "get_inventory_happy_path",
-        "category": "HAPPY_PATH",
-        "endpoint": "/inventory/{product_id}",
-        "method": "GET",
-        "description": "Create a product (which auto-creates inventory) then retrieve its inventory",
         "setup": {
             "endpoint": "/products",
             "method": "POST",
             "body": {
-                "name": "InventoryTestProduct",
+                "name": "ListTestProduct",
+                "price": 19.99
+            }
+        },
+        "expected_status": 200
+    },
+    {
+        "name": "get_inventory_happy_path",
+        "category": "HAPPY_PATH",
+        "description": "Get inventory for a product (auto-created with quantity 0 on product creation)",
+        "endpoint": "/inventory/{product_id}",
+        "method": "GET",
+        "setup": {
+            "endpoint": "/products",
+            "method": "POST",
+            "body": {
+                "name": "InventoryGetProduct",
+                "price": 15.0
+            },
+            "extract_id_from": "id"
+        },
+        "request_data": {
+            "path": {
+                "product_id": "$setup_id"
+            }
+        },
+        "expected_status": 200,
+        "expected_response": {
+            "quantity": 0,
+            "reserved": 0
+        }
+    },
+    {
+        "name": "get_inventory_not_found",
+        "category": "NOT_FOUND",
+        "description": "Attempt to get inventory for a non-existent product",
+        "endpoint": "/inventory/{product_id}",
+        "method": "GET",
+        "request_data": {
+            "path": {
+                "product_id": 99999
+            }
+        },
+        "expected_status": 404
+    },
+    {
+        "name": "update_inventory_happy_path",
+        "category": "HAPPY_PATH",
+        "description": "Update inventory quantity for a product",
+        "endpoint": "/inventory/{product_id}",
+        "method": "PUT",
+        "setup": {
+            "endpoint": "/products",
+            "method": "POST",
+            "body": {
+                "name": "InventoryUpdateProduct",
                 "price": 25.0
             },
             "extract_id_from": "id"
@@ -250,86 +282,42 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
             "path": {
                 "product_id": "$setup_id"
             },
-            "query": {},
-            "body": null
-        },
-        "expected_status": 200,
-        "cleanup": null
-    },
-    {
-        "name": "get_inventory_not_found",
-        "category": "NOT_FOUND",
-        "endpoint": "/inventory/{product_id}",
-        "method": "GET",
-        "description": "Attempt to get inventory for a non-existent product",
-        "setup": null,
-        "request_data": {
-            "path": {
-                "product_id": 999999
-            },
-            "query": {},
-            "body": null
-        },
-        "expected_status": 404,
-        "cleanup": null
-    },
-    {
-        "name": "update_inventory_happy_path",
-        "category": "HAPPY_PATH",
-        "endpoint": "/inventory/{product_id}",
-        "method": "PUT",
-        "description": "Create a product then update its inventory quantity",
-        "setup": {
-            "endpoint": "/products",
-            "method": "POST",
-            "body": {
-                "name": "InvUpdateProduct",
-                "price": 30.0
-            },
-            "extract_id_from": "id"
-        },
-        "request_data": {
-            "path": {
-                "product_id": "$setup_id"
-            },
-            "query": {},
             "body": {
                 "quantity": 50
             }
         },
         "expected_status": 200,
-        "cleanup": null
+        "expected_response": {
+            "quantity": 50
+        }
     },
     {
         "name": "update_inventory_not_found",
         "category": "NOT_FOUND",
+        "description": "Attempt to update inventory for a non-existent product",
         "endpoint": "/inventory/{product_id}",
         "method": "PUT",
-        "description": "Attempt to update inventory for a non-existent product",
-        "setup": null,
         "request_data": {
             "path": {
-                "product_id": 999999
+                "product_id": 99999
             },
-            "query": {},
             "body": {
                 "quantity": 10
             }
         },
-        "expected_status": 404,
-        "cleanup": null
+        "expected_status": 404
     },
     {
         "name": "reserve_inventory_insufficient_stock",
-        "category": "INVALID_INPUT",
+        "category": "BOUNDARY",
+        "description": "Attempt to reserve more inventory than available",
         "endpoint": "/inventory/{product_id}/reserve",
         "method": "POST",
-        "description": "Create a product (inventory starts at 0), attempt to reserve more than available stock, expect 400 with insufficient inventory message",
         "setup": {
             "endpoint": "/products",
             "method": "POST",
             "body": {
-                "name": "LowStockProduct",
+                "name": "ReserveInsufficientProduct",
                 "price": 10.0
             },
             "extract_id_from": "id"
@@ -338,39 +326,34 @@ TEST_CASES: list[dict[str, Any]] = resolve_env_placeholders(
             "path": {
                 "product_id": "$setup_id"
             },
-            "query": {},
-            "body": {
-                "quantity": 100
-            }
-        },
-        "expected_status": 400,
-        "cleanup": null
-    },
-    {
-        "name": "reserve_inventory_not_found",
-        "category": "NOT_FOUND",
-        "endpoint": "/inventory/{product_id}/reserve",
-        "method": "POST",
-        "description": "Attempt to reserve inventory for a non-existent product",
-        "setup": null,
-        "request_data": {
-            "path": {
-                "product_id": 999999
-            },
-            "query": {},
             "body": {
                 "quantity": 5
             }
         },
-        "expected_status": 404,
-        "cleanup": null
+        "expected_status": 400
+    },
+    {
+        "name": "reserve_inventory_not_found",
+        "category": "NOT_FOUND",
+        "description": "Attempt to reserve inventory for a non-existent product",
+        "endpoint": "/inventory/{product_id}/reserve",
+        "method": "POST",
+        "request_data": {
+            "path": {
+                "product_id": 99999
+            },
+            "body": {
+                "quantity": 1
+            }
+        },
+        "expected_status": 404
     }
 ]''')
 )
 
 # Base URL for API requests (from app discovery, includes host:port)
-BASE_URL = os.path.expandvars("")
-HEALTH_CHECK_ENDPOINT = os.path.expandvars("")
+BASE_URL = os.path.expandvars("http://localhost:8000")
+HEALTH_CHECK_ENDPOINT = os.path.expandvars("/")
 REQUEST_TIMEOUT = 30
 HEALTH_CHECK_URL = f"{BASE_URL.rstrip('/')}/{HEALTH_CHECK_ENDPOINT.lstrip('/')}"
 # Per-endpoint routing table for microservices DST
