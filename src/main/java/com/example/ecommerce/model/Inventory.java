@@ -28,7 +28,7 @@ public class Inventory {
     private Integer reserved = 0;
 
     @Column(name = "last_updated")
-    @JsonProperty("last_updated")
+    @JsonProperty("updated_at")
     private LocalDateTime lastUpdated;
 
     @PrePersist
@@ -76,6 +76,7 @@ public class Inventory {
         this.reserved = reserved;
     }
 
+    @JsonProperty("updated_at")
     public LocalDateTime getLastUpdated() {
         return lastUpdated;
     }
