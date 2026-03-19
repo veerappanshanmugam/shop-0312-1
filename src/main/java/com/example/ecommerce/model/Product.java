@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
@@ -29,6 +30,7 @@ public class Product {
     private String description;
 
     @Column(nullable = false, precision = 10, scale = 2)
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private BigDecimal price;
 
     @Column(name = "category_id")
